@@ -1,25 +1,33 @@
 const express = require("express");
+const connectDB = require("./config/database.js");
+const User = require("./models/user.js");
 
 const app = express();
 
-const { authAdmin, userAuth } = require("./middlewares/utils")
-
-//Handling Auth midlleware for all GET, POST, DELETE...requests (writing a midlleware for all request coming to /admin handling)
-app.use("/admin", authAdmin );
-
-app.get("/user", userAuth, (req, res) => {
-console.log("data sent for user")
-  res.send("User Data Sent");
+app.post("/signup", async (req, res) => {
+  //creating a new instance of the user model
+  const user = new User({
+    firstName: "PKA",
+    lastName: "Asiedu",
+    emailID: "PKA@gmail.com",
+    password: "PKA123",
+  });
+  try{
+    await user.save();
+    res.send("User Added succesfully");
+  }catch(err){
+    res.status(400).send("error saving user;" + err.message)
+  }
+  
 });
 
-app.get("/admin/getAllUsers", (req, res) => {
-  res.send("All Data Sent");
-});
-
-app.get("/admin/deleteAllUsers", (req, res) => {
-  res.send("deleted a user");
-});
-
-app.listen(3000, () => {
-  console.log("server is running on port 3000");
-});
+connectDB()
+  .then(() => {
+    console.log("Database connection established");
+    app.listen(3000, () => {
+      console.log("server is running on port 3000");
+    });
+  })
+  .catch((err) => {
+    console.log("Database cannot be connected", err);
+  });
